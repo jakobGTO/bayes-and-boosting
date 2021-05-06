@@ -6,7 +6,7 @@
 import numpy as np
 from scipy import misc
 from imp import reload
-from labfuns import *
+from functions import *
 import random
 
 irisX = np.loadtxt('irisX.txt', delimiter=",")
