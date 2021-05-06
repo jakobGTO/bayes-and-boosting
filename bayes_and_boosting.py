@@ -12,28 +12,6 @@ import random
 irisX = np.loadtxt('irisX.txt', delimiter=",")
 irisY = np.loadtxt('irisY.txt', delimiter=",")
 
-# Compute Prior function without Boosting weights
-''' 
-def computePrior(labels, W=None):
-    Npts = labels.shape[0]
-
-    if W is None:
-        W = np.ones((Npts,1))/Npts
-    else:
-        assert(W.shape[0] == Npts)
-    classes = np.unique(labels)
-    Nclasses = np.size(classes)
-
-    prior = np.zeros((Nclasses,1))
-
-    # ==========================
-    for i,k in enumerate(classes):
-        Nk = np.count_nonzero(labels == k)
-        prior[i] = Nk / Npts
-    # ==========================
-
-    return prior
-'''
 
 # Compute Prior with Boosting Weights
 def computePrior(labels, W):
@@ -58,45 +36,6 @@ def computePrior(labels, W):
 
 
 prior = computePrior(irisY, W=None)
-
-# mlParams without Boosting Weights
-'''
-def mlParams(X, labels, W=None):
-    assert(X.shape[0]==labels.shape[0])
-    Npts,Ndims = np.shape(X)
-    classes = np.unique(labels)
-    Nclasses = np.size(classes)
-
-    if W is None:
-        W = np.ones((Npts,1))/float(Npts)
-
-    mu = np.zeros((Nclasses,Ndims))
-    sigma = np.zeros((Nclasses,Ndims,Ndims))
-
-    # ==========================
-    for i,k in enumerate(classes):
-        #Counts N_samples in every class
-        Nk = np.count_nonzero(labels == k)
-        #Gives a vector with observations for each class
-        class_obs = np.where(labels==k)[0]
-
-        mu[i] = np.sum(X[class_obs,:],axis=0)/Nk
-
-    for i,k in enumerate(classes):
-        Nk = np.count_nonzero(labels == k)
-        class_obs = np.where(labels==k)[0]
-
-        #Loop over dimensions in sigma
-        for j in range(Ndims):
-            suma = 0.0
-            #Loop over observations in each class 
-            for obs in class_obs:
-                suma += (X[obs][j] - mu[i][j]) ** 2
-            sigma[i][j][j] = suma/Nk
-    # ==========================
-
-    return mu,sigma
-'''
 
 # mlParams with boosting weights
 def mlParams(X, labels, W):
@@ -157,7 +96,6 @@ def classifyBayes(X, prior, mu, sigma):
 
 # The implemented functions can now be summarized into the `BayesClassifier` class, which we will use later to test the classifier, no need to add anything else here:
 
-# NOTE: no need to touch this
 class BayesClassifier(object):
     def __init__(self):
         self.trained = False
@@ -171,33 +109,6 @@ class BayesClassifier(object):
 
     def classify(self, X):
         return classifyBayes(X, self.prior, self.mu, self.sigma)
-
-
-# ## Test the Maximum Likelihood estimates
-#
-# Call `genBlobs` and `plotGaussian` to verify your estimates.
-
-'''
-X, labels = genBlobs(centers=5)
-mu, sigma = mlParams(X, labels, W=None)
-plotGaussian(X, labels, mu, sigma)
-'''
-
-# Call the `testClassifier` and `plotBoundary` functions for this part.
-
-#testClassifier(BayesClassifier(), dataset='iris', split=0.7)
-
-
-#testClassifier(BayesClassifier(), dataset='vowel', split=0.7)
-
-
-#plotBoundary(BayesClassifier(), dataset='iris', split=0.7)
-#plotBoundary(BayesClassifier(), dataset='vowel', split=0.7)
-
-
-# ## Boosting functions to implement
-#
-# The lab descriptions state what each function should do.
 
 
 # in: base_classifier - a classifier of the type that we will boost, e.g. BayesClassifier
@@ -281,8 +192,6 @@ def classifyBoost(X, classifiers, alphas, Nclasses):
         return np.argmax(votes, axis=1)
 
 
-# The implemented functions can now be summarized another classifer, the `BoostClassifier` class. This class enables boosting different types of classifiers by initializing it with the `base_classifier` argument. No need to add anything here.
-
 
 # NOTE: no need to touch this
 class BoostClassifier(object):
@@ -303,70 +212,3 @@ class BoostClassifier(object):
         return classifyBoost(X, self.classifiers, self.alphas, self.nbr_classes)
 
 
-# ## Run some experiments
-#
-# Call the `testClassifier` and `plotBoundary` functions for this part.
-
-
-#testClassifier(BoostClassifier(BayesClassifier(), T=10),
-               #dataset='iris', split=0.7)
-
-
-#testClassifier(BoostClassifier(BayesClassifier(), T=10),
-               #dataset='vowel', split=0.7)
-
-
-#plotBoundary(BoostClassifier(BayesClassifier()), dataset='iris', split=0.7)
-#plotBoundary(BoostClassifier(BayesClassifier()), dataset='vowel', split=0.7)
-
-
-# Now repeat the steps with a decision tree classifier.
-
-
-#testClassifier(DecisionTreeClassifier(), dataset='iris', split=0.7)
-
-
-#testClassifier(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='iris',split=0.7)
-
-
-#testClassifier(DecisionTreeClassifier(), dataset='vowel',split=0.7)
-
-
-#testClassifier(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='vowel',split=0.7)
-
-
-#plotBoundary(DecisionTreeClassifier(), dataset='iris',split=0.7)
-
-
-#plotBoundary(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='iris',split=0.7)
-
-
-# ## Bonus: Visualize faces classified using boosted decision trees
-#
-# Note that this part of the assignment is completely voluntary! First, let's check how a boosted decision tree classifier performs on the olivetti data. Note that we need to reduce the dimension a bit using PCA, as the original dimension of the image vectors is `64 x 64 = 4096` elements.
-
-
-#testClassifier(BayesClassifier(), dataset='olivetti',split=0.7, dim=20)
-
-
-#testClassifier(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='olivetti',split=0.7, dim=20)
-
-
-# You should get an accuracy around 70%. If you wish, you can compare this with using pure decision trees or a boosted bayes classifier. Not too bad, now let's try and classify a face as belonging to one of 40 persons!
-
-
-# X,y,pcadim = fetchDataset('olivetti') # fetch the olivetti data
-# xTr,yTr,xTe,yTe,trIdx,teIdx = trteSplitEven(X,y,0.7) # split into training and testing
-# pca = decomposition.PCA(n_components=20) # use PCA to reduce the dimension to 20
-# pca.fit(xTr) # use training data to fit the transform
-# xTrpca = pca.transform(xTr) # apply on training data
-# xTepca = pca.transform(xTe) # apply on test data
-# use our pre-defined decision tree classifier together with the implemented
-# boosting to classify data points in the training data
-#classifier = BoostClassifier(DecisionTreeClassifier(), T=10).trainClassifier(xTrpca, yTr)
-#yPr = classifier.classify(xTepca)
-# choose a test point to visualize
-#testind = random.randint(0, xTe.shape[0]-1)
-# visualize the test point together with the training points used to train
-# the class that the test point was classified to belong to
-#visualizeOlivettiVectors(xTr[yTr == yPr[testind],:], xTe[testind,:])
