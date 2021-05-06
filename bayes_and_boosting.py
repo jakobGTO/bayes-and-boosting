@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # coding: utf-8
 
-# # Lab 3: Bayes Classifier and Boosting
-
 import numpy as np
 from scipy import misc
 from imp import reload
